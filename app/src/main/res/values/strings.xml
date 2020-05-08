@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">My App</string>
+    <string name="scan_again">scan again</string>
+    <string name="qr_value">qr value</string>
+    <string name="scan_qr">start</string>
+    <string name="connect_wifi">Connect WiFi</string>
+    <string name="prompt_enabling_wifi">Please Enable WiFi</string>
+
+</resources>
