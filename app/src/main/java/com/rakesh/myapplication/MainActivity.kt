@@ -9,9 +9,11 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.google.zxing.integration.android.IntentIntegrator
 import com.rakesh.myapplication.api.RetrofitClient
+import com.rakesh.myapplication.api.TcpClient
 import com.rakesh.myapplication.model.DefaultResponse
 import retrofit2.Callback
 import retrofit2.Response
+import java.net.Socket
 
 class MainActivity : AppCompatActivity() {
 
@@ -44,7 +46,8 @@ class MainActivity : AppCompatActivity() {
         showDialog("QR Code scanned")
         scanResult.let {
             var QRvalue = scanResult.contents
-            sendQRData(QRvalue)
+         //   sendQRData(QRvalue)
+            send(QRvalue)
         }
     }
 
@@ -77,5 +80,13 @@ class MainActivity : AppCompatActivity() {
         alert.setTitle("Info")
         alert.show()
     }
+
+    private fun send(qrCode : String) {
+        TcpClient.connect(context, "192.168.4.1", 4096, qrCode)
+      /*  val client = Socket("192.168.4.1", 4096)
+        client.outputStream.write(qrCode.toByteArray())
+        client.close()*/
+    }
+
 }
 
