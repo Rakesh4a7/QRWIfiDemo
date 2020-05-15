@@ -11,6 +11,6 @@ interface Api {
     @FormUrlEncoded
     @POST("sendQR")
     fun sendData(
-        @Field("QRDatat") email:String
-    ):Call<DefaultResponse>
+        @Field("QRData") email: String
+    ): Call<DefaultResponse>
 }

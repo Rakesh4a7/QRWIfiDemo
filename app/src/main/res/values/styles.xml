@@ -12,4 +12,8 @@
         <item name="android:textStyle">bold</item>
     </style>
 
+
+    <style name="CustomDialogTheme">
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
 </resources>

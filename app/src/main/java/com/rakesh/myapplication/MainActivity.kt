@@ -2,7 +2,10 @@ package com.rakesh.myapplication
 
 import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -13,19 +16,21 @@ import com.rakesh.myapplication.api.TcpClient
 import com.rakesh.myapplication.model.DefaultResponse
 import retrofit2.Callback
 import retrofit2.Response
+import java.io.DataOutputStream
+import java.io.IOException
 import java.net.Socket
 
 class MainActivity : AppCompatActivity() {
 
     private var context: Context = this
+    private var qrCode: String = "wikileaks.com"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         findViewById<Button>(R.id.scan).setOnClickListener {
-            // startActivity(Intent(this,ScanQrAct::class.java))
-            letsScan()
+           letsScan()
         }
     }
 
@@ -45,9 +50,7 @@ class MainActivity : AppCompatActivity() {
         val scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
         showDialog("QR Code scanned")
         scanResult.let {
-            var QRvalue = scanResult.contents
-         //   sendQRData(QRvalue)
-            send(QRvalue)
+            qrCode = scanResult.contents
         }
     }
 
@@ -73,7 +76,7 @@ class MainActivity : AppCompatActivity() {
             .setCancelable(false)
             .setPositiveButton("Ok") { dialog, _ ->
                 dialog.dismiss()
-                startActivity(Intent(this, ScanWifi::class.java))
+                send()
             }
 
         val alert = dialogBuilder.create()
@@ -81,11 +84,78 @@ class MainActivity : AppCompatActivity() {
         alert.show()
     }
 
-    private fun send(qrCode : String) {
-        TcpClient.connect(context, "192.168.4.1", 4096, qrCode)
-      /*  val client = Socket("192.168.4.1", 4096)
-        client.outputStream.write(qrCode.toByteArray())
-        client.close()*/
+    private fun showInternetDialog() {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Info")
+        builder.setMessage("No Internet Connection.\nEnable internet and Try Again.")
+
+        builder.setPositiveButton("Try Again") { dialog, _ ->
+            dialog.dismiss()
+            send()
+        }
+
+        builder.setNegativeButton("Cancel") { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        builder.show()
+    }
+
+    private fun send() {
+        if (hasInternet())
+            sendData()
+        else {
+            showInternetDialog()
+        }
+    }
+
+    private fun sendData() {
+      //  TcpClient.connect(context, "192.168.137.1", 4096, qrCode)  //192.168.4.1 //192.168.1.181
+
+/*            try {
+                Thread {
+                val soc = Socket("192.168.137.1", 4096) //  192.168.1.181
+                soc.soTimeout
+                val dout = DataOutputStream(soc.getOutputStream())
+                dout.writeUTF(qrCode)
+
+                dout.flush()
+                dout.close()
+                soc.close()
+                }.start()
+            }catch (io: IOException){
+                Log.e("Error", io.localizedMessage)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }*/
+
+        startActivity(Intent(this, ScanWifi::class.java))
+    }
+
+    private fun hasInternet(): Boolean {
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        if (connectivityManager != null) {
+            val capabilities =
+                connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+            if (capabilities != null) {
+                when {
+                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
+                        Log.i("Internet", "NetworkCapabilities.TRANSPORT_CELLULAR")
+                        return true
+                    }
+                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
+                        Log.i("Internet", "NetworkCapabilities.TRANSPORT_WIFI")
+                        return true
+                    }
+                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> {
+                        Log.i("Internet", "NetworkCapabilities.TRANSPORT_ETHERNET")
+                        return true
+                    }
+                }
+            }
+        }
+        return false
     }
 
 }
